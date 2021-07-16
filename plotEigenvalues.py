@@ -13,29 +13,25 @@ import shelve
 mainFolder = os.getcwd()
 
 dataFolder = "Data"
-datasetFolder = "congress-bills"
+datasetFolder = "Power-Law"
+saveFilename = "Figures/Power-Law.pdf"
 
 with shelve.open(os.path.join(mainFolder, dataFolder, datasetFolder, datasetFolder + "_eigenvalues")) as data:
     assortativities = data["rho"]
     meanFieldCECEigenvalues = data["mean-field-eigenvalues"]
     trueCECEigenvalues = data["true-eigenvalues"]
+    originalAssortativity = data["original-assortativity"]
+    originalEigenvalue = data["original-eigenvalue"]
 
 plt.figure()
 plt.plot(assortativities, trueCECEigenvalues, 'ko-', label="CEC Eigenvalue (True)")
-plt.plot(assortativities, meanFieldCECEigenvalues, 'ro-', label="CEC Eigenvalue (MF)")
+plt.plot(assortativities, meanFieldCECEigenvalues, 'ro-', label="CEC Eigenvalue (Mean Field)")
+plt.scatter(originalAssortativity, originalEigenvalue, s=500, marker="x", linewidth=2, color="blue")
 plt.legend()
-plt.xlabel(r"$\rho$")
-plt.ylabel(r"$\lambda$")
+plt.xlabel(r"$\rho$", fontsize=18)
+plt.ylabel(r"$\lambda$", fontsize=18)
 plt.ylim([0, 1.1*max(max(trueCECEigenvalues), max(meanFieldCECEigenvalues))])
 plt.tight_layout()
+plt.savefig(saveFilename, dpi=1000)
 plt.show()
 #%%
-plt.figure()
-plt.plot(assortativities, np.divide(np.abs(trueCECEigenvalues - meanFieldCECEigenvalues), trueCECEigenvalues), 'ko-', label="Error")
-plt.legend()
-plt.xlabel(r"$\rho$")
-plt.ylabel(r"$|\lambda_{MF}-\lambda_{True}|/\lambda_{True}$")
-plt.tight_layout()
-plt.show()
-
-# %%

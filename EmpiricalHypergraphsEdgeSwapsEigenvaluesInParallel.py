@@ -9,6 +9,24 @@ import os
 import shelve
 import utilities
 import os
+import multiprocessing as mp
+
+def parallelRun(hyperedgeList, a, m, assortativityTolerance, maxShufflingIterations, temperature, maxEigenvalueIterations, eigenvalueTolerance):
+    hypergraph = Hypergraph.HypergraphGenerator(hyperedgeList, type="hyperedge-list")
+    hypergraph.shuffleHyperedges(a, m, assortativityTolerance, maxShufflingIterations, temperature)
+    hyperedgeList = hypergraph.getHyperedgeList()
+
+    assortativity = getAssortativity(hyperedgeList, m)
+    meanFieldCECEigenvalue = getCECEigenvalue(hyperedgeList, m)
+
+    weights = np.ones(len(hyperedgeList))
+    T = SparseTensor(hyperedgeList, weights, n)
+    cec = T.getCEC(maxEigenvalueIterations, eigenvalueTolerance)[0]
+    trueCECEigenvalue = cec
+    print(a, flush=True)
+    return assortativity, meanFieldCECEigenvalue, trueCECEigenvalue
+
+numProcesses = len(os.sched_getaffinity(0))
 
 m = 3
 
@@ -51,36 +69,33 @@ n = max([max(index) for index in hyperedgeList]) + 1
 spacing = 0.05
 originalAssortativity = h.getAssortativity(m)
 changeAssortativityList = np.unique(np.concatenate([np.arange(-1 - originalAssortativity, 0, spacing), np.arange(0, 1 - originalAssortativity, spacing)]))
-assortativityList = originalAssortativity + changeAssortativityList
-
-assortativityTolerance = 0.001
+targetAssortativityList = originalAssortativity + changeAssortativityList
+assortativityTolerance = 0.01
 temperature = 0.00001
-maxShufflingIterations = 1e5
+maxShufflingIterations = 1e6
 
 maxEigenvalueIterations = 1000
 eigenvalueTolerance = 1e-5
 
-assortativities = np.zeros(len(assortativityList))
-meanFieldCECEigenvalues = np.zeros(len(assortativityList))
-trueCECEigenvalues = np.zeros(len(assortativityList))
+assortativities = np.zeros(len(targetAssortativityList))
+meanFieldCECEigenvalues = np.zeros(len(targetAssortativityList))
+trueCECEigenvalues = np.zeros(len(targetAssortativityList))
 
-for i in range(len(assortativityList)):
-    a = assortativityList[i]
-    hNew = copy.deepcopy(h)
-    hNew.shuffleHyperedges(a, m, type, tolerance=assortativityTolerance, maxIterations=maxShufflingIterations, temperature=temperature)
+argList = list()
 
-    hyperedgeList = hNew.getHyperedgeList()
+for a in targetAssortativityList:
+    argList.append((list(h.getHyperedgeList()), a, m, assortativityTolerance, maxShufflingIterations, temperature, maxEigenvalueIterations, eigenvalueTolerance))
 
-    assortativities[i] = getAssortativity(hyperedgeList, m)
-    meanFieldCECEigenvalues[i] = getCECEigenvalue(hyperedgeList, m)
+with mp.Pool(processes=numProcesses) as pool:
+    data = pool.starmap(parallelRun, argList)
 
-    weights = np.ones(len(hyperedgeList))
-    T = SparseTensor(hyperedgeList, weights, n)
-    cec = T.getCEC(maxEigenvalueIterations, eigenvalueTolerance)[0]
-    trueCECEigenvalues[i] = cec
-    if a == originalAssortativity:
-        originalEigenvalue = cec
-    print(i)
+for i in range(len(data)):
+    assortativities[i] = data[i][0]
+    meanFieldCECEigenvalues[i] = data[i][1]
+    trueCECEigenvalues[i] = data[i][2]
+
+    if abs(originalAssortativity - assortativities[i]) < 0.0001:
+        originalEigenvalue = trueCECEigenvalues[i]
 
 
 with shelve.open(os.path.join(mainFolder, dataFolder, datasetFolder, datasetFolder + "_eigenvalues")) as data:

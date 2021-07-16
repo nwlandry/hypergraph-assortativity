@@ -6,6 +6,8 @@ import numpy as np
 import copy
 import itertools
 from numpy.linalg import norm
+from scipy.special import comb
+from itertools import combinations
 
 class Hypergraph:
     def __init__(self, hyperedges, weightedEdges=False):
@@ -342,206 +344,51 @@ class HypergraphGenerator:
         for key, hyperedge in hyperedgeListBySize.items():
             self.hyperedges[key] = dict(hyperedge)
 
-    # assortativity function and averaging
-    def degreeAssortativityFunction(self, hyperdegrees, type, **kwargs):
-        if type == "aligned-degrees":
-            value = 0
-            meanDegree = kwargs["meandegree"]
-            isVariance = kwargs["isvariance"]
-            hyperedgeSize = len(hyperdegrees)
-            if isVariance:
-                for i in range(hyperedgeSize):
-                        value += (hyperdegrees[i] - meanDegree)**2/meanDegree**2
-                return value/math.comb(hyperedgeSize, 2)
-            else:
-                for i in range(hyperedgeSize):
-                    for j in range(i):
-                        value += (hyperdegrees[i] - meanDegree)*(hyperdegrees[j] - meanDegree)/meanDegree**2
-                return value/math.comb(hyperedgeSize, 2)
+    def updateMeanDegreeProduct(self, meanDegreeProduct, degrees1, degrees2, newDegrees1, newDegrees2, m, numEdges):
+        numCombos = comb(m, 2)
+        degreeProduct1 = sum([k[0]*k[1]/numCombos for k in combinations(degrees1, 2)])
+        degreeProduct2 = sum([k[0]*k[1]/numCombos for k in combinations(degrees2, 2)])
+        newDegreeProduct1 = sum([k[0]*k[1]/numCombos for k in combinations(newDegrees1, 2)])
+        newDegreeProduct2 = sum([k[0]*k[1]/numCombos for k in combinations(newDegrees2, 2)])
+        return meanDegreeProduct + (newDegreeProduct1 + newDegreeProduct2 - degreeProduct1 - degreeProduct2)/numEdges
 
-        elif type == "large-degrees":
-            isVariance = kwargs["isvariance"]
-            meanDegree = kwargs["meandegree"]
-            hyperedgeSize = len(hyperdegrees)
-            if isVariance:
-                value = 0
-                for degree in hyperdegrees:
-                    value += (degree/meanDegree)**hyperedgeSize
-                return value/hyperedgeSize
-            else:
-                value = 1
-                for degree in hyperdegrees:
-                    value *= degree/meanDegree
-                return value
+    def getMeanDegreeProduct(self, edgeList, k, m):
+        numEdges = len(edgeList)
+        numCombos = comb(m, 2)
+        meanDegreeProduct = sum([np.sum(np.prod(k[list(indices)]) for indices in combinations(edge, 2))/(numEdges*numCombos) for edge in edgeList])
+        return meanDegreeProduct
 
-        elif type == "top-bottom":
-            isVariance = kwargs["isvariance"]
-            meanMinDegree = kwargs["meanmindegree"]
-            meanMaxDegree = kwargs["meanmaxdegree"]
-            if isVariance:
-                return 0.5*((max(hyperdegrees) - meanMaxDegree)**2 + (min(hyperdegrees) - meanMinDegree)**2)
-            else:
-                return (max(hyperdegrees) - meanMaxDegree)*(min(hyperdegrees) - meanMinDegree)
+    def getMeanPowerOfDegree(self, k, power=1):
+        return np.mean(np.power(k, power))
 
-        elif type == "top-2":
-            isVariance = kwargs["isvariance"]
-            meanSecondMaxDegree = kwargs["meansecondmaxdegree"]
-            meanMaxDegree = kwargs["meanmaxdegree"]
-            if isVariance:
-                hyperdegrees = sorted(hyperdegrees)
-                return 0.5*((hyperdegrees[-1] - meanMaxDegree)**2 + (hyperdegrees[-2] - meanSecondMaxDegree)**2)
-            else:
-                hyperdegrees = sorted(hyperdegrees)
-                return (hyperdegrees[-1] - meanMaxDegree)*(hyperdegrees[-2] - meanSecondMaxDegree)
+    def getHyperdegreeSequenceBySize(self, m):
+        d =  {node: hyperdegree[m] for node, hyperdegree in self.hyperdegreeSequence.items()}
+        degreeSequence = np.zeros(max(d.keys()) + 1)
+        for node, degree in d.items():
+            degreeSequence[node] = degree
+        return degreeSequence
 
-        else:
-            print("Not a valid selection")
-
-    def averageHValue(self, hyperedgeSize, type="aligned-degrees"):
-        if type == "aligned-degrees":
-            meanDegree = self.getDegreeMoment(hyperedgeSize, power=1)
-            kwargs = {"meandegree":meanDegree}
-        elif type == "large-degrees":
-            meanDegree = self.getDegreeMoment(hyperedgeSize, power=1)
-            kwargs = {"meandegree":meanDegree}
-        elif type == "top-bottom":
-            meanMinDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="smallest")
-            meanMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="largest")
-            kwargs = {"meanmindegree":meanMinDegree, "meanmaxdegree":meanMaxDegree}
-        elif type == "top-2":
-            meanSecondMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="second-largest")
-            meanMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="largest")
-            kwargs = {"meansecondmaxdegree":meanSecondMaxDegree, "meanmaxdegree":meanMaxDegree}
-
-        hyperedges = self.getHyperedgesBySize(hyperedgeSize, ids=False)
-        numEdges = len(hyperedges)
-        hAvg = 0
-        for edge in hyperedges:
-            degrees = [self.hyperdegreeSequence[index][hyperedgeSize] for index in edge]
-            hAvg += self.degreeAssortativityFunction(degrees, type, isvariance=False, **kwargs)/numEdges
-        return hAvg
-
-    def updateAverageHValue(self, hAvg, degrees1, degrees2, newDegrees1, newDegrees2, hyperedgeSize, numEdges, type="aligned-degrees", **kwargs):
-        return hAvg + self.degreeAssortativityFunction(newDegrees1, type, isvariance=False, **kwargs)/numEdges + self.degreeAssortativityFunction(newDegrees2, type, isvariance=False, **kwargs)/numEdges - self.degreeAssortativityFunction(degrees1, type, isvariance=False, **kwargs)/numEdges - self.degreeAssortativityFunction(degrees2, type, isvariance=False, **kwargs)/numEdges
-
-    def maxHValue(self, hyperedgeSize, type="aligned-degrees"):
-        if type == "aligned-degrees":
-            meanDegree = self.getDegreeMoment(hyperedgeSize, power=1)
-            kwargs = {"meandegree":meanDegree}
-        elif type == "large-degrees":
-            meanDegree = self.getDegreeMoment(hyperedgeSize, power=1)
-            kwargs = {"meandegree":meanDegree}
-        elif type == "top-bottom":
-            meanMinDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="smallest")
-            meanMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="largest")
-            kwargs = {"meanmindegree":meanMinDegree, "meanmaxdegree":meanMaxDegree}
-        elif type == "top-2":
-            meanSecondMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="second-largest")
-            meanMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="largest")
-            kwargs = {"meansecondmaxdegree":meanSecondMaxDegree, "meanmaxdegree":meanMaxDegree}
-
-        hyperedges = self.getHyperedgesBySize(hyperedgeSize, ids=False)
-        numEdges = len(hyperedges)
-        hMax = 0
-        for edge in hyperedges:
-            degrees = [self.hyperdegreeSequence[index][hyperedgeSize] for index in edge]
-            hMax += self.degreeAssortativityFunction(degrees, type, isvariance=True, **kwargs)/numEdges
-        return hMax
-
-    def updateMaxHValue(self, hMax, degrees1, degrees2, newDegrees1, newDegrees2, hyperedgeSize, numEdges, type="aligned-degrees", **kwargs):
-        if type == "aligned-degrees":
-            return hMax
-        elif type == "large-degrees":
-            return hMax
-        elif type == "top-bottom":
-            return hMax + self.degreeAssortativityFunction(newDegrees1, type, isvariance=True, **kwargs)/numEdges + self.degreeAssortativityFunction(newDegrees2, type, isvariance=True, **kwargs)/numEdges - self.degreeAssortativityFunction(degrees1, type, isvariance=True, **kwargs)/numEdges - self.degreeAssortativityFunction(degrees2, type, isvariance=True, **kwargs)/numEdges
-        elif type == "top-2":
-            return hMax + self.degreeAssortativityFunction(newDegrees1, type, isvariance=True, **kwargs)/numEdges + self.degreeAssortativityFunction(newDegrees2, type, isvariance=True, **kwargs)/numEdges - self.degreeAssortativityFunction(degrees1, type, isvariance=True, **kwargs)/numEdges - self.degreeAssortativityFunction(degrees2, type, isvariance=True, **kwargs)/numEdges
-
-    def getDegreeMoment(self, hyperedgeSize, power=1):
-        hyperdegreeSequence = [hyperdegree[hyperedgeSize] for hyperdegree in list(self.hyperdegreeSequence.values())]
-        return sum([hyperdegree**power for hyperdegree in hyperdegreeSequence])/float(len(hyperdegreeSequence))
-
-    def getOrderedDegreeMoment(self, hyperedgeSize, power=1, type="largest"):
-        hyperedges = self.getHyperedgesBySize(hyperedgeSize, ids=False)
-        if type == "largest":
-            return np.mean([max([self.hyperdegreeSequence[index][hyperedgeSize] for index in edge]) for edge in hyperedges])
-        elif type == "second-largest":
-            return np.mean([sorted([self.hyperdegreeSequence[index][hyperedgeSize] for index in edge])[-2] for edge in hyperedges])
-        elif type == "smallest":
-            return np.mean([min([self.hyperdegreeSequence[index][hyperedgeSize] for index in edge]) for edge in hyperedges])
-
-    def updateOrderedDegreeMoment(self, currentValue, degrees1, degrees2, newDegrees1, newDegrees2, numEdges, type="largest"):
-            if type == "largest":
-                return currentValue + (max(newDegrees1) + max(newDegrees2) - max(degrees1) - max(degrees2))/numEdges
-            elif type == "second-largest":
-                return currentValue + (sorted(newDegrees1)[-2] + sorted(newDegrees2)[-2] - sorted(degrees1)[-2] - sorted(degrees1)[-2])/numEdges
-            elif type == "smallest":
-                return currentValue + (min(newDegrees1) + min(newDegrees2) - min(degrees1) - min(degrees2))/numEdges
-
-    def nullHValue(self, hyperedgeSize, type="aligned-degrees"):
-        if type == "aligned-degrees":
-            meanDegree = self.getDegreeMoment(hyperedgeSize, power=1)
-            meanSquaredDegree = self.getDegreeMoment(hyperedgeSize, power=2)
-            return (meanSquaredDegree - meanDegree**2)**2/meanDegree**4
-        elif type == "large-degrees":
-            meanDegree = self.getDegreeMoment(hyperedgeSize, power=1)
-            meanSquaredDegree = self.getDegreeMoment(hyperedgeSize, power=2)
-            return (meanSquaredDegree/meanDegree**2)**hyperedgeSize
-        elif type == "top-bottom":
-            return self.topBottomNullValue(hyperedgeSize)
-        elif type == "top-2":
-            return self.top2NullValue(hyperedgeSize)
-
-    def topBottomNullValue(self, hyperedgeSize):
-        k = [hyperdegree[hyperedgeSize] for hyperdegree in list(self.hyperdegreeSequence.values())]
-        degrees, counts = np.unique(k, return_counts=True)
-        p = counts/sum(counts)
-
-        meanDegree = np.sum(np.multiply(degrees, p))
-        combos = [list(edge) for  edge in itertools.product(range(len(degrees)), repeat=hyperedgeSize)]
-        meanMinDegree = np.sum([np.prod(p[indices])*np.min(degrees[indices])*np.prod(degrees[indices]) for indices in combos])/meanDegree**hyperedgeSize
-        meanMaxDegree = np.sum([np.prod(p[indices])*np.max(degrees[indices])*np.prod(degrees[indices]) for indices in combos])/meanDegree**hyperedgeSize
-        product = np.sum([np.prod(p[indices])*np.min(degrees[indices])*np.max(degrees[indices])*np.prod(degrees[indices]) for indices in combos])/meanDegree**hyperedgeSize
-        return product - meanMinDegree*meanMaxDegree
-
-    def top2NullValue(self, hyperedgeSize):
-        k = [hyperdegree[hyperedgeSize] for hyperdegree in list(self.hyperdegreeSequence.values())]
-        degrees, counts = np.unique(k, return_counts=True)
-        p = counts/sum(counts)
-
-        meanDegree = np.sum(np.multiply(degrees, p))
-        combos = [list(edge) for  edge in itertools.product(range(len(degrees)), repeat=hyperedgeSize)]
-        meanSecondMaxDegree = np.sum([np.prod(p[indices])*np.sort(degrees[indices])[-2]*np.prod(degrees[indices]) for indices in combos])/meanDegree**hyperedgeSize
-        meanMaxDegree = np.sum([np.prod(p[indices])*np.max(degrees[indices])*np.prod(degrees[indices]) for indices in combos])/meanDegree**hyperedgeSize
-        product = np.sum([np.prod(p[indices])*np.sort(degrees[indices])[-2]*np.max(degrees[indices])*np.prod(degrees[indices]) for indices in combos])/meanDegree**hyperedgeSize
-        return product - meanSecondMaxDegree*meanMaxDegree
-
-    def shuffleHyperedges(self, targetAssortativity, hyperedgeSize, type, tolerance=0.01, maxIterations=10000, temperature=0.001, isVerbose=False):
-        shuffledEdges = self.getHyperedgesBySize(hyperedgeSize, ids=True)
+    def shuffleHyperedges(self, targetAssortativity, m, tolerance=0.01, maxIterations=10000, temperature=0.001, isVerbose=False):
+        if targetAssortativity > 1 or targetAssortativity < -1:
+            print("Invalid Assortativity Value")
+            return
+        
+        shuffledEdges = self.getHyperedgesBySize(m, ids=True)
+        edgeList = self.getHyperedgesBySize(m, ids=False)
         numEdges = len(shuffledEdges)
+        k = self.getHyperdegreeSequenceBySize(m)
 
-        if type == "aligned-degrees" or type == "large-degrees":
-            meanDegree = self.getDegreeMoment(hyperedgeSize, power=1)
-        elif type == "top-bottom":
-            meanMinDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="smallest")
-            meanMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="largest")
-        elif type == "top-2":
-            meanSecondMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="second-largest")
-            meanMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="largest")
+        k1 = self.getMeanPowerOfDegree(k, power=1)
+        k2 = self.getMeanPowerOfDegree(k, power=2)
+        kk1 = self.getMeanDegreeProduct(edgeList, k, m)
 
-        hAvg = self.averageHValue(hyperedgeSize, type=type)
-         # these values don't change for aligned-degrees
-        hNull = self.nullHValue(hyperedgeSize, type=type)
-        hMax = self.maxHValue(hyperedgeSize, type=type)
-
-        assortativity = (hAvg - hNull)/(hMax - hNull)
+        assortativity = k1**2*kk1/k2**2 - 1
         if isVerbose:
             assortativityList = [assortativity]
         iteration = 0
         while (abs(targetAssortativity - assortativity) > tolerance) and (iteration < maxIterations):
             uid1, uid2 = random.sample(shuffledEdges.keys(), 2)
-            member1, member2 = random.sample(range(hyperedgeSize), 2)
+            member1, member2 = random.sample(range(m), 2)
             edge1 = shuffledEdges[uid1]["members"]
             edge2 = shuffledEdges[uid2]["members"]
             newEdge1 = list(edge1)
@@ -550,49 +397,23 @@ class HypergraphGenerator:
             newEdge2[member2] = edge1[member1]
             # ensure that we don't create/destroy multiedges
             if len(set(edge1)) == len(set(newEdge1)) and len(set(edge2)) == len(set(newEdge2)):
-                degrees1 = [self.hyperdegreeSequence[index][hyperedgeSize] for index in edge1]
-                degrees2 = [self.hyperdegreeSequence[index][hyperedgeSize] for index in edge2]
-                newDegrees1 = [self.hyperdegreeSequence[index][hyperedgeSize] for index in newEdge1]
-                newDegrees2 = [self.hyperdegreeSequence[index][hyperedgeSize] for index in newEdge2]
-                # handle different cases
-                if type == "aligned-degrees":
-                    avgKwargs = {"meandegree":meanDegree}
-                    maxKwargs = {}
-                elif type == "large-degrees":
-                    avgKwargs = {"meandegree":meanDegree}
-                    maxKwargs = {}
-                elif type == "top-bottom":
-                    newMeanMinDegree = self.updateOrderedDegreeMoment(meanMinDegree, degrees1, degrees2, newDegrees1, newDegrees2, numEdges, type="smallest")
-                    newMeanMaxDegree = self.updateOrderedDegreeMoment(meanMaxDegree, degrees1, degrees2, newDegrees1, newDegrees2, numEdges, type="largest")
-                    avgKwargs = {"meanmindegree":newMeanMinDegree, "meanmaxdegree":newMeanMaxDegree}
-                    maxKwargs = {"meanmindegree":newMeanMinDegree, "meanmaxdegree":newMeanMaxDegree}
-                elif type == "top-2":
-                    newMeanSecondMaxDegree = self.updateOrderedDegreeMoment(meanSecondMaxDegree, degrees1, degrees2, newDegrees1, newDegrees2, numEdges, type="second-largest")
-                    newMeanMaxDegree = self.updateOrderedDegreeMoment(meanMaxDegree, degrees1, degrees2, newDegrees1, newDegrees2, numEdges, type="largest")
-                    avgKwargs = {"meansecondmaxdegree":newMeanSecondMaxDegree, "meanmaxdegree":newMeanMaxDegree}
-                    maxKwargs = {"meansecondmaxdegree":newMeanSecondMaxDegree, "meanmaxdegree":newMeanMaxDegree}
+                degrees1 = k[list(edge1)]
+                degrees2 = k[list(edge2)]
+                newDegrees1 = k[list(newEdge1)]
+                newDegrees2 = k[list(newEdge2)]
 
-                newHAvg = self.updateAverageHValue(hAvg, degrees1, degrees2, newDegrees1, newDegrees2, hyperedgeSize, numEdges, type=type, **avgKwargs)
-
-                newHMax = self.updateMaxHValue(hMax, degrees1, degrees2, newDegrees1, newDegrees2, hyperedgeSize, numEdges, type=type, **maxKwargs)
-
-                newAssortativity = (newHAvg - hNull)/(newHMax - hNull)
+                kk1New = self.updateMeanDegreeProduct(kk1, degrees1, degrees2, newDegrees1, newDegrees2, m, numEdges)
+                newAssortativity = k1**2*kk1New/k2**2 - 1
 
                 difference = (assortativity - targetAssortativity)**2 - (newAssortativity - targetAssortativity)**2
                 if random.random() <= self.boltzmannProbability(difference, temperature):
                     shuffledEdges[uid1]["members"] = tuple(newEdge1)
                     shuffledEdges[uid2]["members"] = tuple(newEdge2)
-                    hAvg = newHAvg
-                    hMax = newHMax
+                    
+                    kk1 = kk1New
                     assortativity = newAssortativity
                     if isVerbose:
                         assortativityList.append(assortativity)
-                    if type == "top-bottom":
-                        meanMinDegree = newMeanMinDegree
-                        meanMaxDegree = newMeanMaxDegree
-                    elif type == "top-2":
-                        meanSecondMaxDegree = newMeanSecondMaxDegree
-                        meanMaxDegree = newMeanMaxDegree
                     iteration += 1
         print("Number of double-edge swaps: " + str(iteration), flush=True)
         self.updateHyperedgesAfterShuffle(shuffledEdges)
@@ -607,69 +428,11 @@ class HypergraphGenerator:
         else:
             return math.exp(difference/temperature)
 
-    def getAssortativity(self, hyperedgeSize, type):
-        if type == "aligned-degrees":
-            meanDegree = self.getDegreeMoment(hyperedgeSize, power=1)
-        elif type == "top-bottom":
-            meanMinDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="smallest")
-            meanMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="largest")
-        elif type == "top-2":
-            meanSecondMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="second-largest")
-            meanMaxDegree = self.getOrderedDegreeMoment(hyperedgeSize, power=1, type="largest")
+    def getAssortativity(self, m):
+        edgeList = self.getHyperedgesBySize(m, ids=False)
+        k = self.getHyperdegreeSequenceBySize(m)
+        k1 = self.getMeanPowerOfDegree(k, power=1)
+        k2 = self.getMeanPowerOfDegree(k, power=2)
+        kk1 = self.getMeanDegreeProduct(edgeList, k, m)        
 
-        hAvg = self.averageHValue(hyperedgeSize, type=type)
-        hNull = self.nullHValue(hyperedgeSize, type=type)
-        hMax = self.maxHValue(hyperedgeSize, type=type)
-        return (hAvg - hNull)/(hMax - hNull)
-
-    def shuffleHyperedgesByCommunity(self, targetFractionOfEdges, hyperedgeSize, communities, tolerance=0.01, maxIterations=10000, temperature=0.001):
-        if abs(np.sum(targetFractionOfEdges) - 1) > 0.00001:
-            print("Fraction of edges does not add up to 1")
-            return
-        shuffledEdges = self.getHyperedgesBySize(hyperedgeSize, ids=True)
-        numEdges = len(shuffledEdges)
-        fracNumCommunities = np.zeros(min(len(np.unique(communities)), hyperedgeSize))
-        for edgeData in list(shuffledEdges.values()):
-            fracNumCommunities[self.getNumCommunities(edgeData["members"], communities)-1] += 1/numEdges
-
-        print(fracNumCommunities)
-
-        iteration = 0
-        while (norm(fracNumCommunities - targetFractionOfEdges) > tolerance) and (iteration < maxIterations):
-            uid1, uid2 = random.sample(shuffledEdges.keys(), 2)
-            member1, member2 = random.sample(range(hyperedgeSize), 2)
-            edge1 = shuffledEdges[uid1]["members"]
-            edge2 = shuffledEdges[uid2]["members"]
-            newEdge1 = list(edge1)
-            newEdge2 = list(edge2)
-            newEdge1[member1] = edge2[member2]
-            newEdge2[member2] = edge1[member1]
-            # ensure that we don't create/destroy multiedges
-            if len(set(edge1)) == len(set(newEdge1)) and len(set(edge2)) == len(set(newEdge2)):
-                numComm1 = self.getNumCommunities(edge1, communities)
-                numComm2 = self.getNumCommunities(edge2, communities)
-                newNumComm1 = self.getNumCommunities(newEdge1, communities)
-                newNumComm2 = self.getNumCommunities(newEdge2, communities)
-                newFracNumCommunities = fracNumCommunities.copy()
-                newFracNumCommunities[numComm1-1] -= 1.0/numEdges
-                newFracNumCommunities[numComm2-1] -= 1.0/numEdges
-                newFracNumCommunities[newNumComm1-1] += 1.0/numEdges
-                newFracNumCommunities[newNumComm2-1] += 1.0/numEdges
-
-                if norm(newFracNumCommunities - targetFractionOfEdges) <= norm(fracNumCommunities - targetFractionOfEdges):
-                    shuffledEdges[uid1]["members"] = tuple(newEdge1)
-                    shuffledEdges[uid2]["members"] = tuple(newEdge2)
-                    fracNumCommunities = newFracNumCommunities.copy()
-                    iteration += 1
-                elif random.random() <= math.exp((norm(fracNumCommunities - targetFractionOfEdges) - norm(newFracNumCommunities - targetFractionOfEdges))/temperature):
-                    shuffledEdges[uid1]["members"] = tuple(newEdge1)
-                    shuffledEdges[uid2]["members"] = tuple(newEdge2)
-                    fracNumCommunities = newFracNumCommunities.copy()
-                    iteration += 1
-        print(fracNumCommunities)
-
-        print("Number of double-edge swaps: " + str(iteration), flush=True)
-        self.updateHyperedgesAfterShuffle(shuffledEdges)
-
-    def getNumCommunities(self, hyperedge, communities):
-        return len(np.unique(communities[list(hyperedge)]))
+        return k1**2*kk1/k2**2 - 1

@@ -22,12 +22,14 @@ parameters = [{"degree-distribution":"power-law","exponent":3,"min-degree":10,"m
 h = Hypergraph.HypergraphGenerator(parameters)
 
 # Shuffle parameters
-assortativityList = np.linspace(-0.5, 0.5, 11)
+spacing = 0.05
+originalAssortativity = h.getAssortativity(m)
+changeAssortativityList = np.unique(np.concatenate([np.arange(-1 - originalAssortativity, 0, spacing), np.arange(0, 1 - originalAssortativity, spacing)]))
+assortativityList = originalAssortativity + changeAssortativityList
 assortativityTolerance = 0.01
 temperature = 0.00001
 maxShufflingIterations = 1e6
 
-type = "large-degrees"
 maxEigenvalueIterations = 1000
 eigenvalueTolerance = 1e-5
 
@@ -38,7 +40,7 @@ trueCECEigenvalues = np.zeros(len(assortativityList))
 for i in range(len(assortativityList)):
     a = assortativityList[i]
     hNew = copy.deepcopy(h)
-    hNew.shuffleHyperedges(a, m, type, tolerance=assortativityTolerance, maxIterations=maxShufflingIterations, temperature=temperature)
+    hNew.shuffleHyperedges(a, m, tolerance=assortativityTolerance, maxIterations=maxShufflingIterations, temperature=temperature)
 
     hyperedgeList = hNew.getHyperedgeList()
 
@@ -49,6 +51,8 @@ for i in range(len(assortativityList)):
     T = SparseTensor(hyperedgeList, weights, n)
     cec = T.getCEC(maxEigenvalueIterations, eigenvalueTolerance)[0]
     trueCECEigenvalues[i] = cec
+    if a == originalAssortativity:
+        originalEigenvalue = cec
     print(i)
 
 
@@ -56,3 +60,5 @@ with shelve.open(os.path.join(mainFolder, dataFolder, datasetFolder, datasetFold
     data["rho"] = assortativities
     data["mean-field-eigenvalues"] = meanFieldCECEigenvalues
     data["true-eigenvalues"] = trueCECEigenvalues
+    data["original-assortativity"] = originalAssortativity
+    data["original-eigenvalue"] = originalEigenvalue

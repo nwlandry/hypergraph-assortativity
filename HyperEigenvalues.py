@@ -15,8 +15,7 @@ class SparseTensor:
             # ordered permutations
             for shift in range(self.dimension):
                 newVector[index[shift]] += self.g(vector, index[shift+1:] + index[:shift], type=type)
-        return newVector*factorial(self.dimension-1)
-
+        return newVector
     def g(self, vector, indices, type="multiply"):
         if type == "multiply":
             return np.prod(vector[list(indices)])
@@ -38,7 +37,6 @@ class SparseTensor:
             newL = norm(newX)/norm(x)
             newX = newX/norm(newX)
             if abs(l - newL) <= tolerance:
-                print(i)
                 return newL, newX
             x = newX.copy()
             l = newL
