@@ -37,10 +37,10 @@ class SparseTensor:
             newL = norm(newX)/norm(x)
             newX = newX/norm(newX)
             if abs(l - newL) <= tolerance:
-                return newL, newX
+                break
             x = newX.copy()
             l = newL
-        return l, x
+        return newL, newX
 
     def getZEC(self, maxIter, tolerance):
         l = 0
@@ -51,10 +51,10 @@ class SparseTensor:
             newL = norm(newX)/norm(x)
             newX = newX/norm(newX)
             if abs(l - newL) <= tolerance:
-                return newL, newX
+                break
             x = newX.copy()
             l = newL
-        return l, x
+        return newL, newX
 
     def getHEC(self, maxIter, tolerance):
         l = 0
@@ -65,7 +65,7 @@ class SparseTensor:
             newL = norm(newX)/norm(x)
             newX = newX/norm(newX)
             if abs(l - newL) <= tolerance:
-                return newL, newX
+                break
             x = newX.copy()
             l = newL
-        return l, x
+        return newL, newX

@@ -10,8 +10,9 @@ def parallelRun(k, m, epsilon):
     hyperedgeList = createAssortativeProd(k, m, epsilon, type="large-degrees")
     if len(hyperedgeList) > 0:
         assortativity = getAssortativity(hyperedgeList, m)
-        predictedAssortativity = epsilonToRho(epsilon, hyperedgeList, m)
-        return epsilon, assortativity, predictedAssortativity
+        trueEpsilon = getEpsilon(hyperedgeList, m)
+        predictedAssortativity = epsilonToRho(trueEpsilon, hyperedgeList, m)
+        return trueEpsilon, assortativity, predictedAssortativity
     else:
         return np.NaN, np.NaN, np.NaN
 
@@ -21,7 +22,7 @@ mainFolder = os.getcwd()
 dataFolder = "Data"
 datasetFolder = "EpsilonRho"
 
-n = 100
+n = 1000
 kmin = 10
 kmax = 100
 r = 3

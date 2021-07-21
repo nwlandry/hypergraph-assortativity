@@ -31,8 +31,9 @@ for i in range(len(epsilonList)):
             hyperedgeList = createAssortativeProd(k, m, epsilon, type="large-degrees")
             if len(hyperedgeList) > 0:
                 assortativities.append(getAssortativity(hyperedgeList, m))
-                predictedAssortativities.append(epsilonToRho(epsilon, hyperedgeList, m))
-                epsilons.append(epsilon)
+                trueEpsilon = getEpsilon(hyperedgeList, m)
+                predictedAssortativities.append(epsilonToRho(trueEpsilon, hyperedgeList, m))
+                epsilons.append(trueEpsilon)
         except:
             pass
     print(i)
