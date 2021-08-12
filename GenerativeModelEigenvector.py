@@ -26,21 +26,21 @@ if len(hyperedgeList) > 0:
 
     weights = np.ones(len(hyperedgeList))
     T = SparseTensor(hyperedgeList, weights, n)
-    trueCECEigenvector = T.getCEC(maxEigenvalueIterations, eigenvalueTolerance)[1]
+    trueEigenvector = T.getCEC(maxEigenvalueIterations, eigenvalueTolerance)[1]
 
     epsilon = getEpsilon(hyperedgeList, m)
 
     print(epsilon)
 
-    zerothOrderCECEigenvector = zerothOrderEigenvector(hyperedgeList)
-    firstOrderCECEigenvector = firstOrderEigenvector(hyperedgeList, epsilon, m)
+    zerothOrder = zerothOrderEigenvector(hyperedgeList)
+    firstOrder = firstOrderEigenvector(hyperedgeList, epsilon, m)
 
-    dataMin = min(np.min(trueCECEigenvector), np.min(zerothOrderCECEigenvector))
-    dataMax = max(np.max(trueCECEigenvector), np.max(zerothOrderCECEigenvector))
+    dataMin = min(np.min(trueEigenvector), np.min(zerothOrder))
+    dataMax = max(np.max(trueEigenvector), np.max(zerothOrder))
 
     plt.figure()
-    plt.scatter(zerothOrderCECEigenvector, trueCECEigenvector, color="black", marker="x", label="0th order approximation")
-    plt.scatter(firstOrderCECEigenvector, trueCECEigenvector, color="black", marker="o", label="1st order approximation")
+    plt.scatter(zerothOrder, trueEigenvector, color="black", marker="x", label="0th order approximation")
+    plt.scatter(firstOrder, trueEigenvector, color="black", marker="o", label="1st order approximation")
     plt.plot([dataMin, dataMax], [dataMin, dataMax], 'k--')
     plt.xlabel(r"$u^{(MF)}_i$", fontsize=18)
     plt.ylabel(r"$u_i$", fontsize=18)

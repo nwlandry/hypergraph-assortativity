@@ -14,13 +14,13 @@ def parallelRun(hyperedgeList, a, m, assortativityTolerance, maxShufflingIterati
     hyperedgeList = hypergraph.getHyperedgeList()
 
     assortativity = getAssortativity(hyperedgeList, m)
-    meanFieldCECEigenvalue = getCECEigenvalue(hyperedgeList, m)
+    meanFieldEigenvalue = getCliqueExpansionEigenvalue(hyperedgeList, m)
 
     weights = np.ones(len(hyperedgeList))
     T = SparseTensor(hyperedgeList, weights, n)
     cec = T.getCEC(maxEigenvalueIterations, eigenvalueTolerance)[0]
-    trueCECEigenvalue = cec
-    return assortativity, meanFieldCECEigenvalue, trueCECEigenvalue
+    trueEigenvalue = cec
+    return assortativity, meanFieldEigenvalue, trueEigenvalue
 
 numProcesses = len(os.sched_getaffinity(0))
 
@@ -51,8 +51,8 @@ maxEigenvalueIterations = 1000
 eigenvalueTolerance = 1e-5
 
 assortativities = np.zeros(len(targetAssortativityList))
-meanFieldCECEigenvalues = np.zeros(len(targetAssortativityList))
-trueCECEigenvalues = np.zeros(len(targetAssortativityList))
+meanFieldEigenvalues = np.zeros(len(targetAssortativityList))
+trueEigenvalues = np.zeros(len(targetAssortativityList))
 
 argList = list()
 
@@ -64,16 +64,16 @@ with mp.Pool(processes=numProcesses) as pool:
 
 for i in range(len(data)):
     assortativities[i] = data[i][0]
-    meanFieldCECEigenvalues[i] = data[i][1]
-    trueCECEigenvalues[i] = data[i][2]
+    meanFieldEigenvalues[i] = data[i][1]
+    trueEigenvalues[i] = data[i][2]
 
     if abs(originalAssortativity - assortativities[i]) < 0.0001:
         print("There is an assortativity which matches the original assortativity")
-        originalEigenvalue = trueCECEigenvalues[i]
+        originalEigenvalue = trueEigenvalues[i]
 
 with shelve.open(os.path.join(mainFolder, dataFolder, datasetFolder, datasetFolder + "_eigenvalues")) as data:
     data["rho"] = assortativities
-    data["mean-field-eigenvalues"] = meanFieldCECEigenvalues
-    data["true-eigenvalues"] = trueCECEigenvalues
+    data["mean-field-eigenvalues"] = meanFieldEigenvalues
+    data["true-eigenvalues"] = trueEigenvalues
     data["original-assortativity"] = originalAssortativity
     data["original-eigenvalue"] = originalEigenvalue

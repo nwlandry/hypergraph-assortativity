@@ -6,7 +6,7 @@ from itertools import combinations
 from numpy.linalg import norm
 
 
-def getCECEigenvalue(edgeList, m):
+def getCliqueExpansionEigenvalue(edgeList, m):
     k = getDegreeSequence(edgeList)
     rho = getAssortativity(edgeList, m)
     k1 = np.mean(k)
@@ -21,7 +21,7 @@ def getAssortativity(edgeList, m):
     kk1 = meanTriangles(edgeList, k, m)
     return k1**2*kk1/k2**2 - 1
 
-def getAssortativity(edgeList, m, type="large-degrees"):
+def getAssortativity(edgeList, m):
     k = getDegreeSequence(edgeList)
     k1 = np.mean(k)
     k2 = np.mean(np.power(k, 2))
@@ -31,8 +31,8 @@ def getAssortativity(edgeList, m, type="large-degrees"):
 def meanTriangles(edgeList, k, m):
     numEdges = len(edgeList)
     numCombos = comb(m, 2)
-    sumTriangles = sum([np.sum(np.prod(k[list(indices)]) for indices in combinations(edge, 2)) for edge in edgeList])
-    return sumTriangles/(numEdges*numCombos)
+    sumTriangles = sum([np.sum(np.prod(k[list(indices)])/(numEdges*numCombos) for indices in combinations(edge, 2)) for edge in edgeList])
+    return sumTriangles
 
 def getDegreeSequence(edgeList):
     # edgeList must be the same size

@@ -3,7 +3,7 @@ import random
 import numpy as np
 import copy
 import itertools
-from itertools import combinations
+from itertools import combinations, product
 from scipy.special import comb
 import os
 import Hypergraph
@@ -68,11 +68,30 @@ def createAssortativeProd(k, m, epsilon, type="large-degrees"):
             majorIndex = edge[0]
             p = getMaxAssortativeP(k[majorIndex], k[0], k[-1], m, volume, epsilon, h, type)
         q = getAssortativeP(k[edge], volume, epsilon, h)
-        if q >= p:
+        if q > p:
+            print("hi")
             edgeList.append(tuple(sortedIndices[edge]))
         elif random.random() <= q/p:
             edgeList.append(tuple(sortedIndices[edge]))
         index -= np.random.geometric(p) # index backwards
+    return edgeList
+
+def createAssortativeProdExhaustive(k, m, epsilon, type="large-degrees"):
+    n = len(k)
+    volume = np.sum(k)
+    k1 = np.mean(k)
+    k2 = np.mean(np.power(k, 2))
+
+    if type == "large-degrees":
+        g = lambda k: np.prod(k/k1) - (k2/k1**2)**m
+    elif type == "aligned-degrees":
+        g = lambda k: np.sum([(combo[0] - k1)*(combo[1] - k1) for combo in combinations(k, 2)])/(comb(len(k), 2, exact=True)*k1**2) - (k2 - k1**2)**2/k1**4
+
+    edgeList = list()
+    for edge in list(product(range(n), repeat=m)):
+        p = getAssortativeP(k[list(edge)], volume, epsilon, g)
+        if random.random() < p:
+            edgeList.append(edge)
     return edgeList
 
 def getAssortativeP(k, volume, epsilon, h):
