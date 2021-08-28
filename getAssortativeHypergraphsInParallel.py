@@ -1,14 +1,11 @@
-from GenerativeModels import *
 from HyperEigenvalues import *
 from MeanFieldTheory import *
 import numpy as np
-from math import factorial
 import Hypergraph
 from HyperEigenvalues import SparseTensor
 import os
 import shelve
 import utilities
-import os
 import multiprocessing as mp
 
 def parallelRun(hyperedgeList, a, m, assortativityTolerance, maxShufflingIterations, temperature):
@@ -25,17 +22,17 @@ mainFolder = os.getcwd()
 # Import the hypergraph
 dataFolder = "Data"
 
-datasetFolder = "Eu-Emails"
-sizeFile = "email-Eu-nverts.txt"
-memberFile = "email-Eu-simplices.txt"
+# datasetFolder = "Eu-Emails"
+# sizeFile = "email-Eu-nverts.txt"
+# memberFile = "email-Eu-simplices.txt"
 
 # datasetFolder = "congress-bills"
 # sizeFile = "congress-bills-nverts.txt"
 # memberFile = "congress-bills-simplices.txt"
 # #
-# datasetFolder = "tags-ask-ubuntu"
-# sizeFile = "tags-ask-ubuntu-nverts.txt"
-# memberFile = "tags-ask-ubuntu-simplices.txt"
+datasetFolder = "tags-ask-ubuntu"
+sizeFile = "tags-ask-ubuntu-nverts.txt"
+memberFile = "tags-ask-ubuntu-simplices.txt"
 
 # datasetFolder = "email-Enron"
 # sizeFile = "email-Enron-nverts.txt"
@@ -52,15 +49,13 @@ hyperedgeSizes = [m]
 hyperedgeList = utilities.readScHoLPData(hyperedgeSizeFile, memberIDFile)
 hyperedgeList = utilities.filterHyperedgesBySize(hyperedgeList, hyperedgeSizes)
 h = Hypergraph.HypergraphGenerator(hyperedgeList, type="hyperedge-list")
-n = max([max(index) for index in hyperedgeList]) + 1
 
-
-# Hypergraph parameters
+# datasetFolder = "Power-Law"
+# # Hypergraph parameters
 # n = 1000
 # m = 3
 # isDegreeCorrelated = True
 # parameters = [{"degree-distribution":"power-law","exponent":3,"min-degree":10,"max-degree":100,"hyperedge-size":m,"size":n,"is-correlated":isDegreeCorrelated}]
-
 # h = Hypergraph.HypergraphGenerator(parameters)
 
 # Shuffle parameters
@@ -72,7 +67,7 @@ changeAssortativityList = np.unique(np.concatenate([np.arange(-1 - originalAssor
 targetAssortativityList = originalAssortativity + changeAssortativityList
 assortativityTolerance = 0.01
 temperature = 0.00001
-maxShufflingIterations = 1e5
+maxShufflingIterations = 1e6
 
 argList = list()
 

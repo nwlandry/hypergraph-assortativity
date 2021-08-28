@@ -22,7 +22,7 @@ labels = ['(a)', '(b)', '(c)', '(d)']
 saveFilename = "Figures/eigenvalue.pdf"
 
 
-plt.figure(figsize=(6.4, 4.8))
+plt.figure(figsize=(6.4, 3.6))
 
 for i in range(4):
     datasetFolder = datasetFolderList[i]
@@ -37,9 +37,7 @@ for i in range(4):
 
     plt.plot(assortativities, trueEigenvalues, 'k^-', label=r"$\lambda$", markersize=3, linewidth=0.5)
     plt.plot(assortativities, meanFieldEigenvalues, 'ko-', label=r"$\lambda^{(0)} + \epsilon \lambda^{(1)}$", markersize=3, linewidth=0.5)
-    # plt.scatter(originalAssortativity, originalEigenvalue, s=100, c="k", marker="X", linewidth=0.1, markeredgewidth=0.1)
-    # plt.scatter(originalAssortativity, originalEigenvalue, s=100, c="r", marker="x", linewidth=1)
-    plt.plot(originalAssortativity, originalEigenvalue, markersize=5, marker="s", markerfacecolor="red", markeredgewidth=0.5, markeredgecolor="white")
+    plt.plot(originalAssortativity, originalEigenvalue, markersize=5, marker="s", markerfacecolor="lightgrey", markeredgewidth=1, markeredgecolor="black")
 
     if i == 0:
         plt.legend(fontsize=8, loc="lower left")
@@ -55,10 +53,10 @@ for i in range(4):
     plt.gca().tick_params(axis='both', which='major', labelsize=6)
     plt.gca().tick_params(axis='both', which='minor', labelsize=6)
 
-    xPos = min(assortativities) + 0.1*(max(assortativities) - min(assortativities))
+    xPos = min(assortativities) + 0.0*(max(assortativities) - min(assortativities))
     yPos = 0.9*max(max(meanFieldEigenvalues), max(trueEigenvalues))
 
-    plt.text(xPos, yPos, labels[i], fontsize=12)
+    plt.text(xPos, yPos, labels[i], fontsize=10)
 
 plt.tight_layout()
 plt.savefig("Figures/eigenvalue_vs_rho.png", dpi=1000)

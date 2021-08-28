@@ -19,14 +19,7 @@ def getAssortativity(edgeList, m):
     k1 = np.mean(k)
     k2 = np.mean(np.power(k, 2))
     kk1 = meanTriangles(edgeList, k, m)
-    return k1**2*kk1/k2**2 - 1
-
-def getAssortativity(edgeList, m):
-    k = getDegreeSequence(edgeList)
-    k1 = np.mean(k)
-    k2 = np.mean(np.power(k, 2))
-    kk1 = meanTriangles(edgeList, k, m)
-    return k1**2*kk1/k2**2 - 1
+    return (m - 1)*(k1/k2)**2*kk1/2 - 1
 
 def meanTriangles(edgeList, k, m):
     numEdges = len(edgeList)

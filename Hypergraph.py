@@ -435,4 +435,4 @@ class HypergraphGenerator:
         k2 = self.getMeanPowerOfDegree(k, power=2)
         kk1 = self.getMeanDegreeProduct(edgeList, k, m)        
 
-        return k1**2*kk1/k2**2 - 1
+        return (m - 1)*(k1/k2)**2*kk1/2 - 1

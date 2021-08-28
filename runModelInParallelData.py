@@ -16,7 +16,7 @@ def parallelRun(hyperedgeList, gamma, beta, initialFractionInfected, tmax, fract
     weights = np.ones(len(hyperedgeList))
     T = SparseTensor(hyperedgeList, weights, n)
     eigenvalue = T.getCEC(maxEigenvalueIterations, eigenvalueTolerance)[0]
-    return equilibrium, assortativity, eigenvalue
+    return equilibrium/H.number_of_nodes(), assortativity, eigenvalue
 
 
 
@@ -42,7 +42,7 @@ tmax = 300
 fractionToAverage = 0.1
 isVerbose = True
 numProcesses = len(os.sched_getaffinity(0))
-numRuns = 5
+numRuns = 10
 initialFractionInfected = 1.0
 m = 3
 
