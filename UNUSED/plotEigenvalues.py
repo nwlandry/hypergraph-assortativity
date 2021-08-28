@@ -5,11 +5,9 @@ from MeanFieldTheory import *
 import numpy as np
 from math import factorial
 import matplotlib.pyplot as plt
-import Hypergraph
-import copy
 import os
 import shelve
-#%%
+
 mainFolder = os.getcwd()
 
 dataFolder = "Data"

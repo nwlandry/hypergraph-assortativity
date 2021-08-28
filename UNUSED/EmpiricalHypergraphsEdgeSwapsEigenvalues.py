@@ -1,8 +1,6 @@
-from GenerativeModels import *
 from HyperEigenvalues import *
 from MeanFieldTheory import *
 import numpy as np
-from math import factorial
 import Hypergraph
 import copy
 import os
@@ -72,7 +70,7 @@ for i in range(len(assortativityList)):
     hyperedgeList = hNew.getHyperedgeList()
 
     assortativities[i] = getAssortativity(hyperedgeList, m)
-    meanFieldEigenvalues[i] = getCliqueExpansionEigenvalue(hyperedgeList, m)
+    meanFieldEigenvalues[i] = getExpansionEigenvalue(hyperedgeList, m)
 
     weights = np.ones(len(hyperedgeList))
     T = SparseTensor(hyperedgeList, weights, n)

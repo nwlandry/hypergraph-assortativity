@@ -1,9 +1,7 @@
-from GenerativeModels import *
 from HyperEigenvalues import *
 from MeanFieldTheory import *
 import numpy as np
 import Hypergraph
-import copy
 import os
 import shelve
 import multiprocessing as mp
@@ -14,7 +12,7 @@ def parallelRun(hyperedgeList, a, m, assortativityTolerance, maxShufflingIterati
     hyperedgeList = hypergraph.getHyperedgeList()
 
     assortativity = getAssortativity(hyperedgeList, m)
-    meanFieldEigenvalue = getCliqueExpansionEigenvalue(hyperedgeList, m)
+    meanFieldEigenvalue = getExpansionEigenvalue(hyperedgeList, m)
 
     weights = np.ones(len(hyperedgeList))
     T = SparseTensor(hyperedgeList, weights, n)

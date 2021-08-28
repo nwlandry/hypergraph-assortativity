@@ -1,4 +1,4 @@
-from GenerativeModels import *
+import Hypergraph
 from HyperEigenvalues import *
 from MeanFieldTheory import *
 import numpy as np

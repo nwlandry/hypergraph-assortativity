@@ -22,9 +22,9 @@ mainFolder = os.getcwd()
 # Import the hypergraph
 dataFolder = "Data"
 
-# datasetFolder = "Eu-Emails"
-# sizeFile = "email-Eu-nverts.txt"
-# memberFile = "email-Eu-simplices.txt"
+datasetFolder = "Eu-Emails"
+sizeFile = "email-Eu-nverts.txt"
+memberFile = "email-Eu-simplices.txt"
 
 # datasetFolder = "congress-bills"
 # sizeFile = "congress-bills-nverts.txt"

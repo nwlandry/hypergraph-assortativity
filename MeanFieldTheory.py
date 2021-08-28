@@ -6,7 +6,7 @@ from itertools import combinations
 from numpy.linalg import norm
 
 
-def getCliqueExpansionEigenvalue(edgeList, m):
+def getExpansionEigenvalue(edgeList, m):
     k = getDegreeSequence(edgeList)
     rho = getAssortativity(edgeList, m)
     k1 = np.mean(k)
