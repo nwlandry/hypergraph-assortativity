@@ -30,9 +30,9 @@ dataFolder = "Data"
 # sizeFile = "congress-bills-nverts.txt"
 # memberFile = "congress-bills-simplices.txt"
 # #
-datasetFolder = "tags-ask-ubuntu"
-sizeFile = "tags-ask-ubuntu-nverts.txt"
-memberFile = "tags-ask-ubuntu-simplices.txt"
+# datasetFolder = "tags-ask-ubuntu"
+# sizeFile = "tags-ask-ubuntu-nverts.txt"
+# memberFile = "tags-ask-ubuntu-simplices.txt"
 
 # datasetFolder = "email-Enron"
 # sizeFile = "email-Enron-nverts.txt"

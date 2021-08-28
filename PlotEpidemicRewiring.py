@@ -7,12 +7,12 @@ from HyperEigenvalues import SparseTensor
 mainFolder = os.getcwd()
 dataFolder = "Data"
 
-# congress-bills
-datasetFolder = "congress-bills"
-qualifier = ""
-height = 0.6
-ylim = [0, 2.5]
-hasLegend = True
+# # congress-bills
+# datasetFolder = "congress-bills"
+# qualifier = ""
+# height = 0.6
+# ylim = [0, 2.5]
+# hasLegend = True
 
 # # Power-Law
 # datasetFolder = "Power-Law"

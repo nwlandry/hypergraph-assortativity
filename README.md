@@ -9,6 +9,6 @@ A description of the files in the main directory:
 - HyperEigenvalues.py: This file contains the SparseTensor class which is used to compute the true eigenvalue that is plotted in Fig. 2 and indirectly used in Fig. 3.
 - Hypergraph.py: This file contains the Hypergraph class (used to represent hypergraphs for the contagion simulations) and the HypergraphGenerator class (used to generate configuration model hypergraphs as well as perform preferential edge swaps).
 - MeanFieldTheory.py: This file is used to calculate the approximate eigenvalue used in Fig. 2 and calculate the assortativity as well as other (unused) miscellaneous functions.
-- PlotEigenvaluesCombined.py: Generates Fig. 2 from the data generated with ConfigModelEdgeSwapsEigenvaluesInParallel.py and EmpiricalHypergraphsEdgeSwapsEigenvaluesInParallel.py
-- PlotRewiring.py: Generates Fig. 3 from the data generated with GetAssortativeHypergraphsInParallel.py and RunContagionInParallel.py.
-- utilities.py: Imports the datasets from Austin Benson's [data repository](https://www.cs.cornell.edu/~arb/data/) and filters by hyperedge size.
+- PlotEigenvaluesVsRhoCombined.py: Generates Fig. 2 from the data generated with ConfigModelEdgeSwapsEigenvaluesInParallel.py and EmpiricalHypergraphsEdgeSwapsEigenvaluesInParallel.py
+- PlotEpidemicRewiring.py: Generates Fig. 3 from the data generated with RewireHypergraphsInParallel.py and RunContagionInParallel.py.
+- utilities.py: Imports the datasets from Austin Benson's [data repository](https://www.cs.cornell.edu/~arb/data/) and filters a hyperedge list by hyperedge size.
