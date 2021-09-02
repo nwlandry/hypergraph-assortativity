@@ -1,4 +1,4 @@
-This repository contains the code for the forthcoming paper *Hypergraph assortativity: the effect on the largest eigenvalue and a strategy for suppressing epidemics* by Nicholas W. Landry and Juan G. Restrepo.
+This repository contains the code for the forthcoming paper *Hypergraph dynamics: assortativity and the expansion eigenvalue* by Nicholas W. Landry and Juan G. Restrepo.
 
 The *Figures* folder contains all the figures used in the paper, the *UNUSED* folder contains relevant but unused code, and the (not-included for space reasons) *Data* folder contains the datasets on which our analysis runs.
 
