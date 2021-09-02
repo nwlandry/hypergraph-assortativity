@@ -1,6 +1,6 @@
 This repository contains the code for the forthcoming paper *Hypergraph dynamics: assortativity and the expansion eigenvalue* by Nicholas W. Landry and Juan G. Restrepo.
 
-The *Figures* folder contains all the figures used in the paper, the *UNUSED* folder contains relevant but unused code, and the (not-included for space reasons) *Data* folder contains the datasets on which our analysis runs.
+The *Figures* folder contains all the figures used in the paper, the *UNUSED* folder contains relevant but unused code, and the (not-included because of Github storage limitations) *Data* folder contains the datasets on which our analysis runs.
 
 A description of the files in the main directory:
 - ConfigModelEdgeSwapsEigenvaluesInParallel.py: This file generates the lambda vs. rho plot for Fig. 2 in the main text for a configuration null model.
