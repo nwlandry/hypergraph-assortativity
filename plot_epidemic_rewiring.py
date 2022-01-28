@@ -6,42 +6,42 @@ import numpy as np
 mainFolder = os.getcwd()
 dataFolder = "Data"
 
-# congress-bills
-datasetFolder = "congress-bills"
-qualifier = ""
-height = 0.6
-ylim = [0, 2.5]
-hasLegend = True
+# # congress-bills: 2*beta3c
+# datasetFolder = "congress-bills"
+# qualifier = ""
+# height = 0.6
+# ylim = [0, 3.5]
+# hasLegend = True
 
-# # Power-Law
+# # Power-Law: 2.7*beta3c
 # datasetFolder = "Power-Law"
 # qualifier = ""
 # height = 0.6
-# ylim = [0, 3]
+# ylim = [0, 3.5]
 # hasLegend = False
 
-# # Eu-Emails small beta
+# # Eu-Emails small beta: 2*beta3c
 # datasetFolder = "Eu-Emails"
 # qualifier = "_small_beta"
 # height = 0.65
 # ylim = [0, 1]
 # hasLegend = False
 
-# # Eu-Emails medium beta
-# datasetFolder = "Eu-Emails"
-# qualifier = "_medium_beta"
-# height = 0.65
-# ylim = [0, 1]
-# hasLegend = False
+# Eu-Emails medium beta: 2.75*beta3c
+datasetFolder = "Eu-Emails"
+qualifier = "_medium_beta"
+height = 0.65
+ylim = [0, 1.5]
+hasLegend = False
 
-# # Eu-Emails large beta
+# # Eu-Emails large beta: 5*beta3c
 # datasetFolder = "Eu-Emails"
 # qualifier = "_large_beta"
 # height = 0.5
 # ylim = [0, 8]
 # hasLegend = False
 
-# # tags-ask-ubuntu small beta
+# # tags-ask-ubuntu small beta: 
 # datasetFolder = "tags-ask-ubuntu"
 # qualifier = "_small_beta"
 # height = 0.25
@@ -89,7 +89,12 @@ if hasLegend:
 plt.subplot(212)
 plt.ticklabel_format(axis="y", style="sci", scilimits=(-2, 0)) 
 
-plt.plot(rho, 100*np.array(equilibria), 'ko-', label=r"Epidemic equilibrium given $\beta_3$")
+mean_equilibria = 100*np.mean(equilibria, axis=1)
+std_equilibria = 100*np.std(equilibria, axis=1)
+
+# plt.plot(rho, mean_equilibria, 'ko-', label=r"Epidemic equilibrium given $\beta_3$")
+# plt.fill_between(rho, mean_equilibria - std_equilibria, mean_equilibria + std_equilibria, facecolor="lightgrey")
+plt.errorbar(rho, mean_equilibria, yerr=std_equilibria, color="black", ecolor="lightgrey", marker="o",  label=r"Epidemic equilibrium given $\beta_3$")
 yPos = height*ylim[1]
 plt.xlim([min(rho), max(rho)])
 plt.ylim(ylim)

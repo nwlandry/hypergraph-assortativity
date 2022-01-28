@@ -7,10 +7,10 @@ from collections import Counter
 
 
 def getEquilibriumPoint(G, gamma, beta, fraction_infected, tmax, fractionToAverage, numSimulations, isVerbose):
-    equilibriumPoint = 0
+    equilibriumPoint = np.zeros(numSimulations)
     for sim in range(numSimulations):
         t, S, I = Gillespie_SIS(G, beta, gamma, transmission_function=individual_contagion, rho=fraction_infected, tmin=0, tmax=tmax)
-        equilibriumPoint += averageEquilibrium(t, I, averagingTime=fractionToAverage*(np.max(t)-np.min(t)))/numSimulations
+        equilibriumPoint[sim] = averageEquilibrium(t, I, averagingTime=fractionToAverage*(np.max(t)-np.min(t)))
     if isVerbose:
         print(equilibriumPoint, flush=True)
     return equilibriumPoint
