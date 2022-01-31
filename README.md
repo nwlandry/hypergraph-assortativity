@@ -1,6 +1,6 @@
 This repository contains the code for the paper [*Hypergraph assortativity: a dynamical systems perspective*](https://arxiv.org/abs/2109.01099) by Nicholas W. Landry and Juan G. Restrepo.
 
-The *Figures* folder contains all the figures used in the paper, the *UNUSED* folder contains relevant but unused code, and the *Data* folder contains the datasets on which our analysis runs (not included because of Github storage limitations).
+The *Figures* folder contains all the figures used in the paper and the *Data* folder contains the datasets on which our analysis runs (not included because of Github storage limitations).
 
 A description of the scripts in the main directory:
 - configuration_model_eigenvalues_in_parallel.py: This script generates the data for the lambda vs. rho plot for Fig. 2 in the main text for a configuration null model.
