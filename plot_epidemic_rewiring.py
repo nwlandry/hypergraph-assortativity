@@ -6,6 +6,7 @@ import numpy as np
 mainFolder = os.getcwd()
 dataFolder = "Data"
 
+panels_labeled = False
 # # congress-bills: 2*beta3c
 # datasetFolder = "congress-bills"
 # qualifier = ""
@@ -27,19 +28,19 @@ dataFolder = "Data"
 # ylim = [0, 1]
 # hasLegend = False
 
-# Eu-Emails medium beta: 2.75*beta3c
-datasetFolder = "Eu-Emails"
-qualifier = "_medium_beta"
-height = 0.65
-ylim = [0, 1.5]
-hasLegend = False
-
-# # Eu-Emails large beta: 5*beta3c
+# # Eu-Emails medium beta: 2.75*beta3c
 # datasetFolder = "Eu-Emails"
-# qualifier = "_large_beta"
-# height = 0.5
-# ylim = [0, 8]
+# qualifier = "_medium_beta"
+# height = 0.65
+# ylim = [0, 1.5]
 # hasLegend = False
+
+# Eu-Emails large beta: 5*beta3c
+datasetFolder = "Eu-Emails"
+qualifier = "_large_beta"
+height = 0.5
+ylim = [0, 8]
+hasLegend = False
 
 # # tags-ask-ubuntu small beta: 
 # datasetFolder = "tags-ask-ubuntu"
@@ -82,7 +83,8 @@ plt.ylim([0, plotHeight])
 plt.ylabel(r"$\beta_3/\beta_3^c$", fontsize=18)
 xPos = min(rho) + 0.05*(max(rho) - min(rho))
 yPos = height*plotHeight
-plt.text(xPos, yPos, "(a)", fontsize=20)
+if panels_labeled:
+    plt.text(xPos, yPos, "(a)", fontsize=20)
 if hasLegend:
     plt.legend(loc="lower left", facecolor="none", edgecolor="black")
 
@@ -100,7 +102,8 @@ plt.xlim([min(rho), max(rho)])
 plt.ylim(ylim)
 plt.xlabel(r"$\rho$", fontsize=18)
 plt.ylabel("% infected", fontsize=18)
-plt.text(xPos, yPos, "(b)", fontsize=20)
+if panels_labeled:
+    plt.text(xPos, yPos, "(b)", fontsize=20)
 if hasLegend:
     plt.legend(loc="upper left", facecolor="none", edgecolor="black")
 plt.tight_layout()
