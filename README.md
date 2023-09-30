@@ -1,4 +1,4 @@
-This repository contains the code for the paper [*Hypergraph assortativity: a dynamical systems perspective*](https://arxiv.org/abs/2109.01099) by Nicholas W. Landry and Juan G. Restrepo.
+This repository accompanies the article ["Hypergraph assortativity: a dynamical systems perspective"](https://doi.org/10.1063/5.0086905) by Nicholas W. Landry and Juan G. Restrepo and provides all scripts necessary to reproduce all results and figures.
 
 The *Figures* folder contains all the figures used in the paper and the *Data* folder contains the datasets on which our analysis runs (not included because of Github storage limitations).
 
